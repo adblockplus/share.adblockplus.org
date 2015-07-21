@@ -115,9 +115,6 @@ body
 
   function sendDimensions()
   {
-    if (window.parent === window)
-      return;
-
     var dimensions = {
       width: document.body.offsetWidth,
       height: document.body.offsetHeight
@@ -127,7 +124,16 @@ body
     if (/MSIE/.test(navigator.appVersion))
       dimensions = JSON.stringify(dimensions);
 
-    window.parent.postMessage(dimensions, "*");
+    // If this is the top frame we cannot use postMessage so we leave it up to
+    // the actual top frame to grab the dimensions from the root element
+    if (window.parent === window)
+    {
+      var rootElement = document.documentElement;
+      rootElement.setAttribute("data-width", dimensions.width);
+      rootElement.setAttribute("data-height", dimensions.height);
+    }
+    else
+      window.parent.postMessage(dimensions, "*");
   }
 
   window.addEventListener("DOMContentLoaded", function()
